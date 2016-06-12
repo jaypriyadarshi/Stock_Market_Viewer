@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script type="text/javascript">
+</script>
+<!--<button onclick="render_chart(jsonString,symbol)">click</button>-->
+<div id='Hcharts'></div>
+<script type="text/javascript">
+ function resolveDate(date){
+          var dat = new Date(date);
+          return Date.UTC(dat.getFullYear(), dat.getMonth(), dat.getDate());
+        };
+
+
+        function getStock(json){
+          var dates = json.Dates || [];
+          var elements = json.Elements || [];
+          var chartSeries = [];
+
+          if (elements[0]){
+
+              for (var i = 0, datLen = dates.length; i < datLen; i++) {
+                  var dat = resolveDate( dates[i] );
+                  var pointData = [
+                      dat,
+                      elements[0].DataSeries['open'].values[i],
+                      elements[0].DataSeries['high'].values[i],
+                      elements[0].DataSeries['low'].values[i],
+                      elements[0].DataSeries['close'].values[i]
+                  ];
+                  chartSeries.push( pointData );
+              };
+          }
+          return chartSeries;
+
+        };
+
+function render_chart(jsonString,symbol){
+
+              json = $.parseJSON(jsonString);
+              var plotpoints = getStock(json);
+              //console.log(plotpoints);
+
+              $('#Hcharts').highcharts('StockChart', {
+
+                   rangeSelector : {
+                        selected : 0,
+
+                        buttons: [{
+                            type: 'week',
+                            count: 1,
+                            text: '1w'
+                          },
+                            {
+                            type: 'month',
+                            count: 1,
+                            text: '1m'
+                          }, {
+                            type: 'month',
+                            count: 3,
+                            text: '3m'
+                          }, {
+                            type: 'month',
+                            count: 6,
+                            text: '6m'
+                          }, {
+                            type: 'ytd',
+                            text: 'YTD'
+                          }, {
+                            type: 'year',
+                            count: 1,
+                            text: '1y'
+                          }, {
+                            type: 'all',
+                            text: 'All'
+                          }],
+
+                        inputEnabled : false
+                    },
+
+                    title : {
+                        text : symbol + 'Stock Value'
+                    },
+
+                    exporting : {
+                          enabled: false
+                    },
+
+                    yAxis: {
+                      title: {
+                        text: 'Stock Value',
+                        margin: 20,
+                      },
+                      labels:{
+                        align: 'right',
+                      }
+                    },
+
+                    series : [{
+                        name : symbol + 'Stock Value',
+                        data : plotpoints,
+                        type : 'area',
+                        threshold : null,
+                        tooltip : {
+                            valueDecimals : 2
+                        },
+                        fillColor : {
+                            linearGradient : {
+                                x1: 0,
+                                y1: 0,
+                                x2: 0,
+                                y2: 1
+                            },
+                            stops : [
+                                [0, Highcharts.getOptions().colors[0]],
+                                [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                            ]
+                        }
+                    }]
+                });
+};
+</script>
+</body>
+</html>
